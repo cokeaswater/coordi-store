@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: default
+    include:
+      - common
+      - catalog
+
+
+---
+
+spring:
+  jackson:
+    mapper:
+      default-view-inclusion: true
+    serialization:
+      indent-output: true
+

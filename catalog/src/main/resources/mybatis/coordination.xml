@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cokeaswater.cstore.catalog.adapter.persistence.mybatis.repository.CoordinationMybatisRepository">
+
+    <resultMap id="BrandCoordinationScoreDto" type="cokeaswater.cstore.catalog.application.port.in.dto.BrandCoordinationScoreDto">
+        <result column="brand_code"         property="brandCode" />
+        <result column="sum_price"          property="sumOfCategoryPrice"  />
+        <result column="count_category"     property="countOfCategory" />
+        <result column="category_avg"       property="averagePrice"  />
+        <result column="register"           property="scoreKey" />
+    </resultMap>
+
+
+    <resultMap id="CoordinationProductDto" type="cokeaswater.cstore.catalog.application.port.in.dto.CoordinationProductDto">
+        <result column="product_id"         property="productId"  />
+        <result column="brand_code"         property="brandCode"  />
+        <result column="category"           property="category"  />
+        <result column="price"              property="price"    />
+        <result column="register"           property="key" />
+    </resultMap>
+
+
+    <select id="findLastCategoryCoordinationsPartitionKey" resultType="java.time.LocalDateTime">
+        SELECT
+            MAX(`register`)
+        FROM `coordi_category_base`
+    </select>
+
+    <select id="findLastBrandCategoryCoordinationsPartitionKey" resultType="java.time.LocalDateTime" parameterType="Map">
+        SELECT
+            MAX(`register`)
+        FROM `coordi_brand_base`
+        WHERE `brand_code` = #{brandCode}
+    </select>
+
+    <select id="findBrandCategoryCoordinations" parameterType="Map" resultMap="CoordinationProductDto">
+        SELECT
+            b.product_id,
+            b.brand_code,
+            b.category,
+            b.price ,
+            b.register
+        FROM coordi_brand_base b
+        WHERE register = #{key}
+        AND brand_code = #{brandCode}
+
+    </select>
+
+    <select id="findCategoryCoordinations" parameterType="Map" resultMap="CoordinationProductDto">
+        SELECT
+            c.product_id,
+            c.brand_code,
+            c.category,
+            c.price ,
+            c.register
+        FROM coordi_category_base c
+        WHERE register = #{key}
+        <if test="category != null">
+            AND category = #{category}
+        </if>
+    </select>
+
+
+    <select id="findLowestPriceRecommendBrand" resultMap="BrandCoordinationScoreDto">
+        WITH
+            brand_partition AS (
+                SELECT
+                    brand_code,
+                    MAX(register) AS register
+                FROM coordi_brand_summary
+                GROUP BY brand_code
+            ),
+            brand_order AS (
+                SELECT
+                    cbs.brand_code,
+                    cbs.sum_price,
+                    cbs.count_category,
+                    cbs.category_avg,
+                    cbs.register,
+                    ROW_NUMBER() OVER (ORDER BY cbs.sum_price) AS rn
+                FROM coordi_brand_summary AS cbs
+                JOIN brand_partition AS bp ON cbs.brand_code = bp.brand_code AND cbs.register = bp.register
+            )
+        SELECT
+            bo.brand_code,
+            bo.sum_price,
+            bo.count_category,
+            bo.category_avg,
+            bo.register
+        FROM brand_order AS bo
+        WHERE bo.rn = 1
+    </select>
+
+    <select id="findLowestPriceBrandCategoryCoordinationSet" parameterType="Map" resultMap="CoordinationProductDto">
+        WITH
+            brand_category AS (
+                SELECT
+                    s.*,
+                    RANK() over (partition BY brand_code, category ORDER BY price, product_id) AS rn
+                FROM coordi_brand_base s
+                WHERE s.brand_code = #{brandCode}
+                AND s.register = #{key}
+            )
+        SELECT
+            bc.product_id,
+            bc.brand_code,
+            bc.category,
+            bc.price,
+            bc.register
+        FROM brand_category AS bc
+        WHERE rn = 1
+    </select>
+    
+    <select id = "findLowestPriceCategoryCoordinationSet" parameterType="Map" resultMap="CoordinationProductDto">
+        WITH category AS (
+            SELECT
+                s.product_id,
+                s.brand_code,
+                s.category,
+                s.price,
+                s.register,
+                ROW_NUMBER() OVER ( PARTITION BY category ORDER BY price, product_id) AS rn
+            FROM coordi_category_base s
+            WHERE s.register = #{key}
+
+        )
+        SELECT
+            c.product_id,
+            c.brand_code,
+            c.category,
+            c.price,
+            c.register
+        FROM category AS c
+        WHERE rn = 1
+    </select>
+
+
+
+    <insert id="refreshBrandCategoryCoordinations" parameterType="Map">
+        INSERT INTO `coordi_brand_base` (`product_id`, `category`, `brand_code`, `price`, `register`)
+        WITH category_brand AS
+                 (
+                     SELECT
+                         MIN(price) as min_price,
+                         MAX(price) as max_price,
+                         category, brand_code
+                     FROM product irp
+                     <if test="!@com.querydsl.core.util.StringUtils@isNullOrEmpty(brandCode)">
+                         WHERE brand_code = #{brandCode}
+                     </if>
+                     GROUP BY irp.category, irp.brand_code
+                 )
+
+        SELECT
+            p.id AS product_id,
+            p.category,
+            p.brand_code,
+            p.price,
+            '${key}'
+        FROM product p
+        JOIN category_brand AS cb ON p.price = cb.min_price AND p.brand_code = cb.brand_code AND p.category = cb.category
+
+        UNION
+
+        SELECT
+            p.id AS product_id,
+            p.category,
+            p.brand_code,
+            p.price,
+            '${key}'
+        FROM product p
+        JOIN category_brand AS cb ON p.price = cb.max_price AND p.brand_code = cb.brand_code AND p.category = cb.category
+    </insert>
+
+    <insert id = "refreshCategoryCoordinations" parameterType="Map">
+        INSERT INTO `coordi_category_base` (`product_id`, `category`, `brand_code`, `price`, `register`)
+        WITH
+            brand_partition AS (
+                SELECT
+                    brand_code,
+                    max(register) AS register
+                FROM coordi_brand_base
+                GROUP BY brand_code
+            ),
+            category AS (
+                SELECT
+                    s.category,
+                    min(s.price) AS min_price,
+                    max(s.price) AS max_price
+                FROM coordi_brand_base s
+                JOIN brand_partition AS bp ON s.brand_code = bp.brand_code AND s.register = bp.register
+                GROUP BY category
+            )
+
+        SELECT
+            p.id,
+            p.category,
+            p.brand_code,
+            p.price,
+            '${key}'
+        FROM product p
+        JOIN category ON p.price = category.min_price AND p.category = category.category
+
+        UNION
+
+        SELECT
+            p.id,
+            p.category,
+            p.brand_code,
+            p.price,
+            '${key}'
+        FROM product p
+        JOIN category ON p.price = category.max_price AND p.category = category.category
+
+    </insert>
+
+    <insert id="refreshBrandTotalCoordinationScore" parameterType="Map">
+        INSERT INTO `coordi_brand_summary` (`brand_code`, `sum_price`, `count_category`, `category_avg`, `register`)
+        WITH
+            brand_partition AS (
+                SELECT
+                    brand_code,
+                    MAX(register) AS register
+                FROM coordi_brand_base
+                GROUP BY brand_code
+            ),
+            brand_category AS (
+                SELECT
+                    s.*,
+                    RANK() over (partition BY s.brand_code, category ORDER BY price, product_id) AS rn
+                FROM coordi_brand_base s
+                JOIN brand_partition AS bp ON s.brand_code = bp.brand_code AND s.register = bp.register
+            ) ,
+            brand_rating AS (
+                SELECT
+                    brand_code,
+                    SUM(price) AS sum_price,
+                    COUNT(category) AS count_category
+                FROM brand_category AS bc
+                WHERE rn = 1
+                <if test="!@com.querydsl.core.util.StringUtils@isNullOrEmpty(brandCode)">
+                    AND bc.brand_code = #{brandCode}
+                </if>
+                GROUP BY bc.brand_code
+            )
+        SELECT
+            br.brand_code,
+            br.sum_price,
+            br.count_category,
+            ROUND(br.sum_price / br.count_category) AS category_avg,
+            NOW()
+        FROM brand_rating AS br
+
+    </insert>
+
+</mapper>

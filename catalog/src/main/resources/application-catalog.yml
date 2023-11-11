@@ -1,0 +1,101 @@
+
+spring:
+  config:
+    activate:
+      on-profile: test
+  sql:
+    init:
+      schema-locations: classpath:/catalog-schema.sql
+      data-locations: classpath:/catalog-data.sql
+      mode: always
+
+  datasource:
+    url: jdbc:h2:mem:card;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      pool-name: db-pool
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+    defer-datasource-initialization: true
+    database: h2
+
+mybatis:
+  mapper-locations: classpath:/mybatis/*.xml
+
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  level:
+    org:
+      springframework: INFO
+      hibernate: INFO
+    cokeaswater:
+      default: DEBUG
+      cstore:
+        catalog:
+          adapter:
+            persistence:
+              mybatis: INFO
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: default
+
+  sql:
+    init:
+      schema-locations: classpath:/catalog-schema.sql
+      data-locations: classpath:/catalog-data.sql
+      mode: always
+
+  datasource:
+    url: jdbc:h2:mem:card;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      pool-name: db-pool
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+    database: h2
+
+mybatis:
+  mapper-locations: classpath:/mybatis/*.xml
+
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  level:
+    p6spy: WARN
+    org:
+      springframework: INFO
+      hibernate: INFO
+    cokeaswater:
+      default: INFO
+      cstore:
+        catalog:
+          adapter:
+            persistence:
+              mybatis: WARN
+
+---
+
