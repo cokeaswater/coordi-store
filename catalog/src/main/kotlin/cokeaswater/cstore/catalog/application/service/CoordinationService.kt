@@ -10,6 +10,9 @@ import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationComm
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationQueryCase
 import cokeaswater.cstore.catalog.application.port.out.CoordinationPersistencePort
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
+import cokeaswater.cstore.common.exception.CustomRuntimeException
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
+import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +23,8 @@ internal class CoordinationService(
     private val persistencePort: CoordinationPersistencePort,
     private val eventPublisher: ApplicationEventPublisher
 ) : CoordinationQueryCase, CoordinationCommandCase {
-
+    private val defaultErrorMessage = "추천용 데이터가 준비되지 않았습니다."
+    private val log = KotlinLogging.logger { }
 
     @Transactional
     override fun refreshSummaryCoordination(): Int {
@@ -66,31 +70,27 @@ internal class CoordinationService(
         return persistencePort.refreshBrandTotalCoordinationScore(command.brandCode)
     }
 
+    @CircuitBreaker(name = "querySummaryRecommendCoordination", fallbackMethod = "circuitBreakingEmptyFallback")
     override fun querySummaryRecommendCoordination(): List<CoordinationProductDto> {
         val key = persistencePort.findLastCategoryCoordinationsPartitionKey() ?: run {
             eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
-            return listOf()
+            throw CustomRuntimeException(defaultErrorMessage)
         }
         return persistencePort.findLowestPriceCategoryCoordinationSet(key)
     }
 
+    @CircuitBreaker(name = "queryBrandRecommendCoordination", fallbackMethod = "circuitBreakingEmptyFallback")
     override fun queryBrandRecommendCoordination(): List<CoordinationProductDto> {
-
-
-//        val brandKey = persistencePort.findLastBrandRecommendPartitionKey() ?: run {
-//            eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
-//            return listOf()
-//        }
 
         val brandCoordinationScoreDto = persistencePort.findLowestPriceRecommendBrand() ?: run {
             eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
-            return listOf()
+            throw CustomRuntimeException(defaultErrorMessage)
         }
 
         val key =
             persistencePort.findLastBrandCategoryCoordinationsPartitionKey(brandCoordinationScoreDto.brandCode) ?: run {
                 eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
-                return listOf()
+                throw CustomRuntimeException(defaultErrorMessage)
             }
 
         return persistencePort.findLowestPriceBrandCategoryCoordinationSet(
@@ -99,10 +99,11 @@ internal class CoordinationService(
         )
     }
 
+    @CircuitBreaker(name = "queryCategoryMinMaxCoordination", fallbackMethod = "circuitBreakingEmptyFallback")
     override fun queryCategoryMinMaxCoordination(category: ProductCategory): List<CoordinationProductDto> {
         val key: LocalDateTime = persistencePort.findLastCategoryCoordinationsPartitionKey() ?: run {
             eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
-            return listOf()
+            throw CustomRuntimeException(defaultErrorMessage)
         }
 
         val list = persistencePort.findCategoryCoordinations(category, key)
@@ -114,6 +115,11 @@ internal class CoordinationService(
             1 -> listOf(list.first())
             else -> listOf(list.first(), list.last())
         }
+    }
+
+    private fun circuitBreakingEmptyFallback(throwable: Throwable): List<CoordinationProductDto> {
+        log.warn { "## CircuitBreaker Fallback Method Called, $throwable" }
+        return listOf()
     }
 
 }

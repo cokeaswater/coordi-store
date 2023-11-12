@@ -88,6 +88,15 @@ spring:
 mybatis:
   mapper-locations: classpath:/mybatis/*.xml
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: count_based
+        slidingWindowSize: 4
+        failureRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 2
+
 
 decorator:
   datasource:
