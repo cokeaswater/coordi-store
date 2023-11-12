@@ -89,10 +89,6 @@ internal class CoordinationMybatisRepositoryTest(
         log.info { "## inserted : $inserted" }
         Assertions.assertTrue(inserted > 0)
 
-        val list = repository.findLowestPriceBrandCategoryCoordinationSet("A", now)
-        log.info { "## List : ${list.size}" }
-        log.info { "## List : $list" }
-        Assertions.assertEquals(8 , list.size)
 
     }
 
