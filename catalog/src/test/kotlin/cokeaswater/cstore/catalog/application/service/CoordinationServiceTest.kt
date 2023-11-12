@@ -6,9 +6,11 @@ import cokeaswater.cstore.catalog.application.port.`in`.params.RefreshBrandCoord
 import cokeaswater.cstore.catalog.application.port.out.CoordinationPersistencePort
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import cokeaswater.cstore.common.event.OperationEvent
+import cokeaswater.cstore.common.exception.CustomRuntimeException
 import mu.KotlinLogging
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -17,12 +19,15 @@ import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
 import java.time.LocalDateTime
 
+
 @ExtendWith(MockitoExtension::class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @DisplayName("코디네이션 서비스 유닛 테스트")
-internal class CoordinationServiceTest {
+internal class CoordinationServiceTest (
+){
 
     private val log = KotlinLogging.logger { }
+
 
     @Mock
     lateinit var persistencePort: CoordinationPersistencePort
@@ -32,6 +37,7 @@ internal class CoordinationServiceTest {
 
     @InjectMocks
     lateinit var service: CoordinationService
+
 
     @Test
     @Order(1)
@@ -56,9 +62,12 @@ internal class CoordinationServiceTest {
 
         whenever(persistencePort.findLastCategoryCoordinationsPartitionKey()).thenReturn(null)
 
-        val list = service.queryCategoryMinMaxCoordination(ProductCategory.ACC)
 
-        assertEquals(0, list.size)
+        assertThrows(CustomRuntimeException::class.java) {
+            val list = service.queryCategoryMinMaxCoordination(ProductCategory.ACC)
+            assertEquals(0, list.size)
+        }
+
 
         verify(eventPublisher, times(1)).publishEvent(anyVararg(OperationEvent::class))
         verify(persistencePort, times(0)).findCategoryCoordinations(any(), any())
@@ -103,14 +112,14 @@ internal class CoordinationServiceTest {
 
         whenever(persistencePort.findLowestPriceRecommendBrand()).thenReturn(null)
 
-        val list = service.queryBrandRecommendCoordination()
-
-        assertEquals(0, list.size)
+        assertThrows(CustomRuntimeException::class.java) {
+            val list = service.queryBrandRecommendCoordination()
+            assertEquals(0, list.size)
+        }
 
         verify(eventPublisher, times(1)).publishEvent(anyVararg(OperationEvent::class))
         verify(persistencePort, times(0)).findLowestPriceBrandCategoryCoordinationSet(any(), any())
     }
-
 
     @Test
     @Order(5)
@@ -118,9 +127,11 @@ internal class CoordinationServiceTest {
     fun queryCategoryRecommendCoordinationNoData() {
         whenever(persistencePort.findLastCategoryCoordinationsPartitionKey()).thenReturn(null)
 
-        val list = service.querySummaryRecommendCoordination()
+        assertThrows(CustomRuntimeException::class.java) {
+            val list = service.querySummaryRecommendCoordination()
+            assertEquals(0, list.size)
+        }
 
-        assertEquals(0, list.size)
 
         verify(eventPublisher, times(1)).publishEvent(anyVararg(OperationEvent::class))
         verify(persistencePort, times(0)).findLowestPriceCategoryCoordinationSet(any())
