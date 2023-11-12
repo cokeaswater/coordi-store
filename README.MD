@@ -30,13 +30,13 @@
     - catalog
     - api
 - 빌드
-```json
-$ gradlew clean :api:build
+```shell
+$ ./gradlew clean :api:build
 $ java -jar ./api/build/libs/api-0.0.1-SNAPSHOT.jar
 ```
 - 테스트
-```json
-$ gradlew test
+```shell
+$ ./gradlew test
 ```
 
 ## 프로젝트 상세 설명
