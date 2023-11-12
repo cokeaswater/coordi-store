@@ -56,4 +56,13 @@ internal class ProductController(
         )
     }
 
+    @DeleteMapping("{productId}")
+    fun deleteProduct(
+        @PathVariable("productId") productId: String
+    ): ResponseEntity<Any> {
+
+        commandCase.removeProduct(productId)
+        return ResponseEntity.ok().build()
+    }
+
 }

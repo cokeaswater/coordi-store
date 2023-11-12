@@ -15,6 +15,7 @@ internal interface CoordinationMybatisRepository {
 
     fun findLastBrandCategoryCoordinationsPartitionKey(@Param("brandCode") brandCode: String): LocalDateTime?
 
+    fun findLastBrandRecommendPartitionKey(): LocalDateTime?
     fun findBrandCategoryCoordinations(
         @Param("brandCode") brandCode: String,
         @Param("key") key: LocalDateTime
@@ -25,7 +26,9 @@ internal interface CoordinationMybatisRepository {
         @Param("key") key: LocalDateTime
     ): List<CoordinationProductDto>
 
-    fun findLowestPriceRecommendBrand(): BrandCoordinationScoreDto?
+    fun findLowestPriceRecommendBrand(
+//        @Param("key") key : LocalDateTime
+    ): BrandCoordinationScoreDto?
 
     fun findLowestPriceBrandCategoryCoordinationSet(
         @Param("brandCode") brandCode: String,

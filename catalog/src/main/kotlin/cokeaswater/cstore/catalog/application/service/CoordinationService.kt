@@ -68,7 +68,6 @@ internal class CoordinationService(
 
     override fun querySummaryRecommendCoordination(): List<CoordinationProductDto> {
         val key = persistencePort.findLastCategoryCoordinationsPartitionKey() ?: run {
-            // 브랜드부터 전체 재설정을 실시할지, 카테고리만 할지에 대한 판단은 고민해볼만한 사항
             eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
             return listOf()
         }
@@ -76,6 +75,13 @@ internal class CoordinationService(
     }
 
     override fun queryBrandRecommendCoordination(): List<CoordinationProductDto> {
+
+
+//        val brandKey = persistencePort.findLastBrandRecommendPartitionKey() ?: run {
+//            eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
+//            return listOf()
+//        }
+
         val brandCoordinationScoreDto = persistencePort.findLowestPriceRecommendBrand() ?: run {
             eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
             return listOf()
@@ -100,8 +106,6 @@ internal class CoordinationService(
         }
 
         val list = persistencePort.findCategoryCoordinations(category, key)
-
-        list
             .filter { e -> e.category == category }
             .sortedBy { e -> e.price }
 

@@ -9,6 +9,9 @@ internal interface CoordinationPersistencePort {
 
     fun findLastCategoryCoordinationsPartitionKey(): LocalDateTime?
 
+    fun findLastBrandRecommendPartitionKey(): LocalDateTime?
+
+//    fun findLowestPriceRecommendBrand(key: LocalDateTime): BrandCoordinationScoreDto?
     fun findLowestPriceRecommendBrand(): BrandCoordinationScoreDto?
 
     fun findLastBrandCategoryCoordinationsPartitionKey(brandCode: String): LocalDateTime?
@@ -26,4 +29,5 @@ internal interface CoordinationPersistencePort {
     fun refreshCategoryCoordinations(now: LocalDateTime): Int
 
     fun refreshBrandCoordinations(brandCode: String?, key: LocalDateTime): Int
+
 }

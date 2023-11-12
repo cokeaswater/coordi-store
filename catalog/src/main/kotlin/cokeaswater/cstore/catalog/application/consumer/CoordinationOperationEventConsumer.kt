@@ -11,10 +11,11 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import java.lang.RuntimeException
 
 
 @Component
-class CoordinationOperationEventConsumer(
+internal class CoordinationOperationEventConsumer(
     private val eventPublisher: ApplicationEventPublisher,
     private val coordinationCommandCase: CoordinationCommandCase
 ) {

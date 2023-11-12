@@ -18,12 +18,16 @@ internal class CoordinationPersistenceAdapter(
         return repository.findLastCategoryCoordinationsPartitionKey()
     }
 
-    override fun findLastBrandCategoryCoordinationsPartitionKey(brandCode: String): LocalDateTime? {
-        return repository.findLastBrandCategoryCoordinationsPartitionKey(brandCode)
+    override fun findLastBrandRecommendPartitionKey(): LocalDateTime? {
+        return repository.findLastBrandRecommendPartitionKey()
     }
 
     override fun findLowestPriceRecommendBrand(): BrandCoordinationScoreDto? {
         return repository.findLowestPriceRecommendBrand()
+    }
+
+    override fun findLastBrandCategoryCoordinationsPartitionKey(brandCode: String): LocalDateTime? {
+        return repository.findLastBrandCategoryCoordinationsPartitionKey(brandCode)
     }
 
 

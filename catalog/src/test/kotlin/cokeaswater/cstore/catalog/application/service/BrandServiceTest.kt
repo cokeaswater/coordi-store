@@ -4,8 +4,10 @@ import cokeaswater.cstore.catalog.application.port.`in`.params.BrandModifyComman
 import cokeaswater.cstore.catalog.application.port.out.BrandPersistencePort
 import cokeaswater.cstore.catalog.fixture.createBrandFixture
 import cokeaswater.cstore.catalog.fixture.createBrandRegisterCommandFixture
+import cokeaswater.cstore.common.event.DomainEvent
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -13,10 +15,16 @@ import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyVararg
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationEventPublisher
 
+@DisplayName("브랜드 서비스 테스트")
 @ExtendWith(MockitoExtension::class)
 internal class BrandServiceTest {
+
+    @Mock
+    lateinit var eventPublisher: ApplicationEventPublisher
 
     @Mock
     lateinit var persistencePort: BrandPersistencePort
@@ -89,6 +97,7 @@ internal class BrandServiceTest {
         service.removeBrand(fixture.code)
 
         verify(persistencePort, times(1)).deleteBrand(any())
+        verify(eventPublisher, times(1)).publishEvent(anyVararg(DomainEvent::class))
 
     }
 }

@@ -33,6 +33,12 @@
         WHERE `brand_code` = #{brandCode}
     </select>
 
+    <select id = "findLastBrandRecommendPartitionKey" resultType="java.time.LocalDateTime">
+        SELECT
+            MAX(`register`)
+        FROM `coordi_brand_summary`
+    </select>
+
     <select id="findBrandCategoryCoordinations" parameterType="Map" resultMap="CoordinationProductDto">
         SELECT
             b.product_id,
@@ -41,8 +47,9 @@
             b.price ,
             b.register
         FROM coordi_brand_base b
-        WHERE register = #{key}
-        AND brand_code = #{brandCode}
+        JOIN brand ob ON b.brand_code = ob.code
+        WHERE b.register = #{key}
+        AND b.brand_code = #{brandCode}
 
     </select>
 
@@ -54,11 +61,14 @@
             c.price ,
             c.register
         FROM coordi_category_base c
+        JOIN brand ob ON c.brand_code = ob.code
         WHERE register = #{key}
         <if test="category != null">
             AND category = #{category}
         </if>
     </select>
+
+
 
 
     <select id="findLowestPriceRecommendBrand" resultMap="BrandCoordinationScoreDto">
@@ -67,7 +77,8 @@
                 SELECT
                     brand_code,
                     MAX(register) AS register
-                FROM coordi_brand_summary
+                FROM coordi_brand_summary bs
+                JOIN brand ob ON bs.brand_code = ob.code
                 GROUP BY brand_code
             ),
             brand_order AS (
@@ -80,6 +91,7 @@
                     ROW_NUMBER() OVER (ORDER BY cbs.sum_price) AS rn
                 FROM coordi_brand_summary AS cbs
                 JOIN brand_partition AS bp ON cbs.brand_code = bp.brand_code AND cbs.register = bp.register
+                WHERE cbs.count_category = 8
             )
         SELECT
             bo.brand_code,
@@ -121,6 +133,7 @@
                 s.register,
                 ROW_NUMBER() OVER ( PARTITION BY category ORDER BY price, product_id) AS rn
             FROM coordi_category_base s
+            JOIN brand ob ON s.brand_code = ob.code
             WHERE s.register = #{key}
 
         )
@@ -179,7 +192,8 @@
                 SELECT
                     brand_code,
                     max(register) AS register
-                FROM coordi_brand_base
+                FROM coordi_brand_base cbb
+                JOIN brand ob ON cbb.brand_code = ob.code
                 GROUP BY brand_code
             ),
             category AS (
@@ -221,8 +235,9 @@
                 SELECT
                     brand_code,
                     MAX(register) AS register
-                FROM coordi_brand_base
-                GROUP BY brand_code
+                FROM coordi_brand_base cbb
+                JOIN brand b ON cbb.brand_code = b.code
+                GROUP BY cbb.brand_code
             ),
             brand_category AS (
                 SELECT

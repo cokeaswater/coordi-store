@@ -69,6 +69,8 @@ internal class BrandServiceIntegrationTest(
         service.removeBrand("A")
 
         service.removeBrand("AAA")
+
+//        Thread.sleep(10000)
     }
 
 }

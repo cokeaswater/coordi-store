@@ -1,20 +1,22 @@
 package cokeaswater.cstore.catalog.application.service
 
+import cokeaswater.cstore.catalog.application.port.`in`.event.BrandDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandRegisterCommand
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandCommandCase
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandQueryCase
 import cokeaswater.cstore.catalog.application.port.out.BrandPersistencePort
 import cokeaswater.cstore.catalog.domain.Brand
+import cokeaswater.cstore.common.event.enums.DomainState
 import mu.KotlinLogging
-import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 internal class BrandService(
-
-    private val persistencePort: BrandPersistencePort
+    private val persistencePort: BrandPersistencePort,
+    private val eventPublisher: ApplicationEventPublisher
 
 ) : BrandCommandCase, BrandQueryCase {
 
@@ -40,6 +42,7 @@ internal class BrandService(
         )
 
         persistencePort.saveBrand(generated)
+        notifyBrandDomainEvent(generated, DomainState.CREATED)
 
         return generated;
 
@@ -64,11 +67,8 @@ internal class BrandService(
         }
 
         if (isModified) {
-            try {
-                persistencePort.saveBrand(targetBrand);
-            } catch (e: DataIntegrityViolationException) {
-                throw IllegalStateException("동일 키의 데이터가 이미 존재합니다. : ${command.changeCode}")
-            }
+            persistencePort.saveBrand(targetBrand)
+            notifyBrandDomainEvent(targetBrand, DomainState.UPDATED)
         }
 
         return targetBrand
@@ -77,12 +77,19 @@ internal class BrandService(
     @Transactional
     override fun removeBrand(brandCode: String) {
         val brand = persistencePort.findBrandByCode(brandCode) ?: return
+        notifyBrandDomainEvent(brand, DomainState.DELETED)
         removeBrand(brand)
+        brand.deleted()
+
+
     }
 
     private fun removeBrand(brand: Brand) {
         persistencePort.deleteBrand(brand)
     }
 
+    private fun notifyBrandDomainEvent(brand: Brand, state: DomainState) {
+        eventPublisher.publishEvent(BrandDomainEvent(domain = brand, state = state))
+    }
 
 }

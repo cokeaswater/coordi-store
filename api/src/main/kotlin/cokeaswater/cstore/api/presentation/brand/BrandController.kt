@@ -2,7 +2,6 @@ package cokeaswater.cstore.api.presentation.brand
 
 import cokeaswater.cstore.api.presentation.brand.dto.request.BrandModifyRequest
 import cokeaswater.cstore.api.presentation.brand.dto.request.BrandRegisterRequest
-import cokeaswater.cstore.api.presentation.common.CustomBody
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandRegisterCommand
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandCommandCase
@@ -19,7 +18,7 @@ internal class BrandController(
 ) {
 
     @PostMapping
-    fun registerProduct(@Valid @RequestBody req: BrandRegisterRequest): ResponseEntity<*> {
+    fun registerProduct(@Valid @RequestBody req: BrandRegisterRequest): ResponseEntity<Any> {
         val brand = commandCase.registerBrand(
             BrandRegisterCommand(
                 brandCode = req.code ?: "",
@@ -27,7 +26,8 @@ internal class BrandController(
             )
         )
 
-        return ResponseEntity(mapper.brandToResponse(brand), HttpStatus.CREATED
+        return ResponseEntity(
+            mapper.brandToResponse(brand), HttpStatus.CREATED
         )
     }
 
@@ -35,7 +35,7 @@ internal class BrandController(
     fun modifyProduct(
         @PathVariable("brandCode") brandCode: String,
         @Valid @RequestBody req: BrandModifyRequest
-    ): ResponseEntity<*> {
+    ): ResponseEntity<Any> {
 
         val brand = commandCase.modifyBrand(
             BrandModifyCommand(
@@ -44,7 +44,17 @@ internal class BrandController(
                 changeCode = req.changeCode
             )
         )
-        return ResponseEntity(mapper.brandToResponse(brand), HttpStatus.OK
+        return ResponseEntity(
+            mapper.brandToResponse(brand), HttpStatus.OK
         )
+    }
+
+    @DeleteMapping("{brandCode}")
+    fun deleteProduct(
+        @PathVariable("brandCode") brandCode: String
+    ): ResponseEntity<Any> {
+
+        commandCase.removeBrand(brandCode)
+        return ResponseEntity.ok().build()
     }
 }

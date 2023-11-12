@@ -67,6 +67,10 @@ internal constructor(
         return isDiff
     }
 
+    internal fun deleted() {
+        modified()
+    }
+
     private fun modified() {
         this.lastModifiedAt = LocalDateTime.now()
     }

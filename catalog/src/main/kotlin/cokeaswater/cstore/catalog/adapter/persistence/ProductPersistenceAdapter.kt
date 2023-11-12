@@ -35,4 +35,8 @@ internal class ProductPersistenceAdapter(
     override fun deleteProduct(product: Product) {
         repository.deleteById(product.id)
     }
+
+    override fun deleteProductByBrandCode(brandCode: String): Long {
+        return repository.deleteProductsByBrandCode(brandCode)
+    }
 }

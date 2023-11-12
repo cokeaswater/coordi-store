@@ -12,5 +12,7 @@ interface ProductCommandCase {
 
     fun removeProduct(productId: String)
 
+    fun removeProductsByBrandCode(brandCode: String)
+
 
 }

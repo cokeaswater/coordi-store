@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 
-internal interface ProductJpaRepository : JpaRepository<ProductJpaEntity, String> {
+internal interface ProductJpaRepository : JpaRepository<ProductJpaEntity, String>, ProductJpaRepositoryCustom {
 
 }

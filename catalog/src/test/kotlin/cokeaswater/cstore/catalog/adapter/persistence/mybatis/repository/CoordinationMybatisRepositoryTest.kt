@@ -38,6 +38,13 @@ internal class CoordinationMybatisRepositoryTest(
     }
 
     @Test
+    fun testFindLastBrandRecommendPartitionKey() {
+        val key = repository.findLastBrandRecommendPartitionKey()
+        log.info { "## Key : $key" }
+        Assertions.assertNull(key)
+    }
+
+    @Test
     fun testFindBrandCategoryCoordinations(){
         val list = repository.findBrandCategoryCoordinations("", LocalDateTime.now())
         log.info { "## List : ${list.size}" }

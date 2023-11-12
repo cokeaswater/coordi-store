@@ -1,8 +1,8 @@
 package cokeaswater.cstore.catalog.application.consumer
 
+import cokeaswater.cstore.catalog.application.port.`in`.event.MassiveProductDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.event.ProductDomainEvent
-import cokeaswater.cstore.catalog.application.port.`in`.params.RefreshBrandCoordinationCommand
-import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationCommandCase
+import cokeaswater.cstore.catalog.application.port.`in`.event.RefreshBrandCategoryCoordinationEvent
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Async
@@ -11,14 +11,13 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
-class ProductDomainConsumer(
+internal class ProductDomainConsumer(
     private val eventPublisher: ApplicationEventPublisher,
-    private val coordinationCommandCase: CoordinationCommandCase
 ) {
     val log = KotlinLogging.logger { }
 
 
-    @Async("operationQueExecutor")
+    @Async("domainQueExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun consumerGroupProductDomain(ev: ProductDomainEvent) {
         log.info { "## Product Domain Event Group : $ev" }
@@ -26,21 +25,29 @@ class ProductDomainConsumer(
         val product = ev.domain
 
         try {
-            coordinationCommandCase.refreshBrandCoordination(
-                RefreshBrandCoordinationCommand(
+            eventPublisher.publishEvent(
+                RefreshBrandCategoryCoordinationEvent(
                     brandCode = product.brandCode,
                     category = product.category,
                     price = product.price.value,
-                    baseKey = product.lastModifiedAt
-
+                    base = product.lastModifiedAt
                 )
             )
+
         } catch (e: Exception) {
-            log.info { "## Refresh Brand-Category Coordination Failed : ${e.message}" }
-            if (ev.tried < 3) {
-                ev.plusTryCount()
-                eventPublisher.publishEvent(ev)
-            }
+            log.warn { "## Product Domain Event Handle Failed : ${e.message} , ${ev.domain}" }
+        }
+    }
+
+    @Async("domainQueExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun consumerGroupMassiveProductDomain(ev: MassiveProductDomainEvent) {
+        log.info { "## Massive Product Domain Event Group : $ev" }
+
+        try {
+            eventPublisher.publishEvent(RefreshBrandCategoryCoordinationEvent())
+        } catch (e: Exception) {
+            log.warn { "## Massive Product Domain Event Handle Failed : ${e.message} , $ev" }
         }
     }
 }

@@ -1,5 +1,6 @@
 package cokeaswater.cstore.catalog.application.service
 
+import cokeaswater.cstore.catalog.application.port.`in`.event.MassiveProductDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.event.ProductDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductRegisterCommand
@@ -9,6 +10,7 @@ import cokeaswater.cstore.catalog.application.port.`in`.usecase.ProductCommandCa
 import cokeaswater.cstore.catalog.application.port.out.ProductPersistencePort
 import cokeaswater.cstore.catalog.domain.Brand
 import cokeaswater.cstore.catalog.domain.Product
+import cokeaswater.cstore.common.event.enums.DomainState
 import mu.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.ApplicationEventPublisher
@@ -38,7 +40,7 @@ internal class ProductService(
             price = command.price
         )
 
-        notifyProductDisplayChanged(generated)
+        notifyProductDomainEvent(generated, DomainState.CREATED)
         persistencePort.saveProduct(generated);
 
         return generated;
@@ -67,13 +69,13 @@ internal class ProductService(
 
         var priceChanged = false
 
-        if (command.price != null ) {
+        if (command.price != null) {
             priceChanged = product.changePrice(command.price);
             isModified = priceChanged || isModified
         }
 
         if (isModified) {
-            if (priceChanged) notifyProductDisplayChanged(product)
+            if (priceChanged) notifyProductDomainEvent(product, DomainState.UPDATED)
             persistencePort.saveProduct(product)
         }
         return product;
@@ -84,13 +86,20 @@ internal class ProductService(
 
         val product = persistencePort.findProductById(productId) ?: return;
 
-        notifyProductDisplayChanged(product)
+        notifyProductDomainEvent(product, DomainState.DELETED)
 
         persistencePort.deleteProduct(product)
+        product.deleted()
     }
 
-    private fun notifyProductDisplayChanged(product: Product) {
-        eventPublisher.publishEvent(ProductDomainEvent(product))
+    @Transactional
+    override fun removeProductsByBrandCode(brandCode: String) {
+        persistencePort.deleteProductByBrandCode(brandCode)
+        eventPublisher.publishEvent(MassiveProductDomainEvent())
+    }
+
+    private fun notifyProductDomainEvent(product: Product, state: DomainState) {
+        eventPublisher.publishEvent(ProductDomainEvent(domain = product, state = state))
     }
 
 }

@@ -4,7 +4,7 @@ import cokeaswater.cstore.catalog.adapter.persistence.jpa.entity.ProductJpaEntit
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.mapper.ProductCrossJpaEntityMapper
 import cokeaswater.cstore.catalog.fixture.createProductFixture
 import mu.KotlinLogging
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -32,7 +32,7 @@ internal class ProductJpaRepositoryTest(
         val all: List<ProductJpaEntity> = repository.findAll()
         log.info { "## All Size : ${all.size}" }
 
-        Assertions.assertEquals(72, all.size)
+        assertEquals(72, all.size)
     }
 
 
@@ -49,10 +49,10 @@ internal class ProductJpaRepositoryTest(
         val all = repository.findAll();
         log.info { "## All Size : ${all.size}" }
 
-        Assertions.assertEquals(73, all.size)
+        assertEquals(73, all.size)
         val found = checkNotNull(repository.findByIdOrNull(domain.id)) { "Not Found" }
 
-        Assertions.assertEquals(domain.name, found.name);
+        assertEquals(domain.name, found.name);
 
         // Update And Check
         val changeName = "ChangeTest"
@@ -62,7 +62,17 @@ internal class ProductJpaRepositoryTest(
         repository.save(forUpdate)
 
         val updateFound = checkNotNull(repository.findByIdOrNull(forUpdate.id)) { "Not Found" }
-        Assertions.assertEquals(changeName, updateFound.name)
+        assertEquals(changeName, updateFound.name)
 
+    }
+
+    @Test
+    @Order(3)
+    @Transactional
+    fun testDeleteByBrandCode() {
+
+        val count = repository.deleteProductsByBrandCode("A")
+        log.info { "## Deleted Count : $count" }
+        assertEquals(8, count)
     }
 }

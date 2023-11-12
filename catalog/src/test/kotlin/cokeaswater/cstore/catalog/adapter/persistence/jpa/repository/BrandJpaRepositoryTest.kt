@@ -26,4 +26,6 @@ internal class BrandJpaRepositoryTest(
 
         Assertions.assertEquals(9, all.size)
     }
+
+
 }
