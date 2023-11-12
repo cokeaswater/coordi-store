@@ -4,6 +4,7 @@ import cokeaswater.cstore.api.jsonview.CoordinationView
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationQueryCase
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import com.fasterxml.jackson.annotation.JsonView
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,8 +19,7 @@ internal class CoordinationController(
     private val mapper: CoordinationDtoToResponseMapper
 ) {
 
-    @GetMapping
-    @RequestMapping("summary")
+    @GetMapping("summary")
     @JsonView(CoordinationView.AllInclude::class)
     fun summaryCoordination(): ResponseEntity<*> {
         val list = queryCase.querySummaryRecommendCoordination()
@@ -29,9 +29,8 @@ internal class CoordinationController(
         return ResponseEntity(body, HttpStatus.OK)
     }
 
-    @GetMapping
+    @GetMapping("brand")
     @JsonView(CoordinationView.CategoryInclude::class)
-    @RequestMapping("brand")
     fun brandCoordination(): ResponseEntity<*> {
         val list = queryCase.queryBrandRecommendCoordination()
 
@@ -41,10 +40,13 @@ internal class CoordinationController(
 
     }
 
-    @GetMapping
+    @GetMapping("minMax")
     @JsonView(CoordinationView.BrandInclude::class)
-    @RequestMapping("minMax")
-    fun categoryCoordination(@RequestParam("category") category: ProductCategory): ResponseEntity<*> {
+    fun categoryCoordination(
+        @RequestParam("category", required = true)
+        @Schema(description = "카테고리 한글명 or ENUM name", examples = ["상의", "아우터", "바지", "스니커즈", "가방", "모자", "양말", "액세서리"])
+        category: ProductCategory
+    ): ResponseEntity<*> {
 
         val list = queryCase.queryCategoryMinMaxCoordination(category)
 

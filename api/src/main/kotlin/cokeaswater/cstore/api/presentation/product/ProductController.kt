@@ -7,21 +7,27 @@ import cokeaswater.cstore.catalog.application.port.`in`.params.ProductRegisterCo
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.ProductCommandCase
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import cokeaswater.cstore.common.domain.Money
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+
 @RestController
 @RequestMapping("products")
-
 internal class ProductController(
     private val commandCase: ProductCommandCase,
     private val mapper: ProductToResponseMapper
 ) {
 
     @PostMapping
-    fun registerProduct(@Valid @RequestBody req: ProductRegisterRequest): ResponseEntity<*> {
+    fun registerProduct(
+
+        @Valid
+        @RequestBody req: ProductRegisterRequest
+    ): ResponseEntity<*> {
         val product = commandCase.registerProduct(
             ProductRegisterCommand(
                 category = req.category ?: ProductCategory.ACC,

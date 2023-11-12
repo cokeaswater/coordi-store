@@ -11,8 +11,14 @@ class ProductCategoryDeSerializer :
 
     private fun convertString(value: String?): ProductCategory {
         val v = value ?: ""
+        val isKorean = !v.matches(Regex("[A-Za-z0-9]+"))
         return ProductCategory.entries
-            .firstOrNull { e -> e.korean == v } ?: throw IllegalArgumentException("$errorMessage : $value")
+            .firstOrNull { e ->
+                when (isKorean) {
+                    true -> e.korean == v
+                    false -> e.name.uppercase() == v.uppercase()
+                }
+            } ?: throw IllegalArgumentException("$errorMessage : $value")
     }
 
     private fun convertInt(value: Number?): ProductCategory {
