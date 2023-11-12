@@ -1,7 +1,9 @@
 package cokeaswater.cstore.catalog.application.service
 
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductRegisterCommand
+import cokeaswater.cstore.catalog.application.port.`in`.params.ProductSearchQuery
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandQueryCase
 import cokeaswater.cstore.catalog.application.port.out.ProductPersistencePort
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
@@ -33,6 +36,21 @@ internal class ProductServiceTest {
 
     @InjectMocks
     lateinit var service: ProductService
+
+
+    @Test
+    @Order(0)
+    fun testSearchBrands(){
+
+        val query = ProductSearchQuery(brandCode = "A")
+
+        whenever(persistencePort.searchProducts(query)).thenReturn(listOf())
+
+        val found = service.searchProduct(query)
+        Assertions.assertEquals(0, found.size)
+
+        Mockito.verify(persistencePort, Mockito.times(1)).searchProducts(query)
+    }
 
 
     @Test

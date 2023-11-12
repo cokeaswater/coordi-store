@@ -1,13 +1,11 @@
 package cokeaswater.cstore.catalog.adapter.persistence.jpa.repository
 
-import cokeaswater.cstore.catalog.config.CatalogDomainConfiguration
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import mu.KotlinLogging
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ContextConfiguration
 
 @SpringBootTest
 //@DataJpaTest
@@ -25,6 +23,14 @@ internal class BrandJpaRepositoryTest(
         log.info { "## All Size : ${all.size}" }
 
         Assertions.assertEquals(9, all.size)
+
+        all.forEach { e -> log.info { "code : ${e.code}" } }
+    }
+
+    @Test
+    fun testFindBrands(){
+        val result = repository.searchBrands(BrandSearchQuery(brandCode = "A"))
+        log.info { "## List : $result" }
     }
 
 

@@ -4,9 +4,11 @@ import cokeaswater.cstore.catalog.application.port.`in`.event.MassiveProductDoma
 import cokeaswater.cstore.catalog.application.port.`in`.event.ProductDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.ProductRegisterCommand
+import cokeaswater.cstore.catalog.application.port.`in`.params.ProductSearchQuery
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandQueryCase
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationCommandCase
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.ProductCommandCase
+import cokeaswater.cstore.catalog.application.port.`in`.usecase.ProductQueryCase
 import cokeaswater.cstore.catalog.application.port.out.ProductPersistencePort
 import cokeaswater.cstore.catalog.domain.Brand
 import cokeaswater.cstore.catalog.domain.Product
@@ -23,7 +25,7 @@ internal class ProductService(
     private val brandQueryCase: BrandQueryCase,
     private val persistencePort: ProductPersistencePort,
     private val eventPublisher: ApplicationEventPublisher,
-) : ProductCommandCase {
+) : ProductCommandCase, ProductQueryCase {
 
     private val log = KotlinLogging.logger { }
 
@@ -100,6 +102,10 @@ internal class ProductService(
 
     private fun notifyProductDomainEvent(product: Product, state: DomainState) {
         eventPublisher.publishEvent(ProductDomainEvent(domain = product, state = state))
+    }
+
+    override fun searchProduct(query: ProductSearchQuery): List<Product> {
+        return persistencePort.searchProducts(query)
     }
 
 }

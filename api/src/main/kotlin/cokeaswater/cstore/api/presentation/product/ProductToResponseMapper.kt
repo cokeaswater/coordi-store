@@ -1,6 +1,6 @@
 package cokeaswater.cstore.api.presentation.product
 
-import cokeaswater.cstore.api.presentation.product.dto.response.ProductResourceResponse
+import cokeaswater.cstore.api.presentation.product.dto.element.ProductResource
 import cokeaswater.cstore.catalog.domain.Product
 import org.springframework.stereotype.Component
 
@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component
 internal class ProductToResponseMapper {
 
 
-    fun productToResponse(product: Product): ProductResourceResponse {
-        return ProductResourceResponse(
+    fun productToResponseResource(product: Product): ProductResource {
+        return ProductResource(
             id = product.id,
             brandId = product.brandCode,
             category = product.category,
@@ -17,5 +17,9 @@ internal class ProductToResponseMapper {
             price = product.price,
             registerAt = product.registerAt
         )
+    }
+
+    fun productsToResponseResources(products: List<Product>): List<ProductResource> {
+        return products.map { e -> productToResponseResource(e) }
     }
 }

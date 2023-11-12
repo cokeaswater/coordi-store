@@ -3,6 +3,7 @@ package cokeaswater.cstore.catalog.application.service
 import cokeaswater.cstore.catalog.application.port.`in`.event.BrandDomainEvent
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandModifyCommand
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandRegisterCommand
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandCommandCase
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.BrandQueryCase
 import cokeaswater.cstore.catalog.application.port.out.BrandPersistencePort
@@ -26,6 +27,10 @@ internal class BrandService(
         val brand = checkNotNull(persistencePort.findBrandByCode(brandCode)) { "브랜드가 존재하지 않습니다. : $brandCode" }
         return brand
 
+    }
+
+    override fun searchBrands(query: BrandSearchQuery): List<Brand> {
+        return persistencePort.searchBrands(query)
     }
 
 

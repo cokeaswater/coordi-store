@@ -1,12 +1,12 @@
 package cokeaswater.cstore.catalog.application.service
 
 import cokeaswater.cstore.catalog.application.port.`in`.params.BrandModifyCommand
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import cokeaswater.cstore.catalog.application.port.out.BrandPersistencePort
 import cokeaswater.cstore.catalog.fixture.createBrandFixture
 import cokeaswater.cstore.catalog.fixture.createBrandRegisterCommandFixture
 import cokeaswater.cstore.common.event.DomainEvent
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,6 +32,19 @@ internal class BrandServiceTest {
     @InjectMocks
     lateinit var service: BrandService
 
+
+    @Test
+    fun testSearchBrands(){
+
+        val query =BrandSearchQuery(brandCode = "A")
+
+        whenever(persistencePort.searchBrands(query)).thenReturn(listOf())
+
+        val found = service.searchBrands(query)
+        assertEquals(0, found.size)
+
+        verify(persistencePort, times(1)).searchBrands(query)
+    }
 
     @Test
     fun testGetBrandByCode() {

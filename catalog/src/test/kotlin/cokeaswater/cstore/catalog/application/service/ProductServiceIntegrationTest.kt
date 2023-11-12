@@ -1,5 +1,8 @@
 package cokeaswater.cstore.catalog.application.service
 
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
+import cokeaswater.cstore.catalog.application.port.`in`.params.ProductSearchQuery
+import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import cokeaswater.cstore.catalog.fixture.createProductModifyCommandFixture
 import cokeaswater.cstore.catalog.fixture.createProductRegisterCommandFixture
 import mu.KotlinLogging
@@ -19,6 +22,19 @@ internal class ProductServiceIntegrationTest(
 ) {
 
     private val log = KotlinLogging.logger {  }
+
+    @Test
+    @DisplayName("제품 검색")
+    fun testSearchProducts() {
+
+        val query = ProductSearchQuery(brandCode = "A")
+        val searched = service.searchProduct(query)
+        assertEquals(8, searched.size)
+
+        val query2 = ProductSearchQuery(category = ProductCategory.ACC)
+        val searched2 = service.searchProduct(query2)
+        assertEquals(9, searched2.size)
+    }
 
     @Test
     @Transactional

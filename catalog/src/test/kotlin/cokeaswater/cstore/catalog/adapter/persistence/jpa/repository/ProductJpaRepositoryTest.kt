@@ -2,6 +2,8 @@ package cokeaswater.cstore.catalog.adapter.persistence.jpa.repository
 
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.entity.ProductJpaEntity
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.mapper.ProductCrossJpaEntityMapper
+import cokeaswater.cstore.catalog.application.port.`in`.params.ProductSearchQuery
+import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import cokeaswater.cstore.catalog.fixture.createProductFixture
 import mu.KotlinLogging
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,6 +28,24 @@ internal class ProductJpaRepositoryTest(
 ) {
 
     val log = KotlinLogging.logger { }
+
+
+    @Test
+    @Order(0)
+    fun testSearchProducts() {
+        val brandCode = "A"
+        val searchedCode =
+            repository.searchProducts(ProductSearchQuery(brandCode = brandCode, pageable = PageRequest.of(0, 5)))
+        log.info { "## Searched BrandCode - $brandCode, Size : ${searchedCode.size}" }
+        assertEquals(5, searchedCode.size)
+
+        val category = ProductCategory.SOCKS
+        val searchedCategory =
+            repository.searchProducts(ProductSearchQuery(category = category, pageable = PageRequest.of(0, 5)))
+        log.info { "## Searched Category - $category,  Size : ${searchedCategory.size}" }
+        assertEquals(5, searchedCategory.size)
+
+    }
 
     @Test
     @Order(1)

@@ -30,4 +30,8 @@ internal class BrandCrossJpaEntityMapper {
         )
     }
 
+    fun entitiesToBrands(entities: List<BrandJpaEntity>): List<Brand> {
+        return entities.map { e -> entityToBrand(e) }
+    }
+
 }

@@ -2,6 +2,7 @@ package cokeaswater.cstore.catalog.adapter.persistence
 
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.mapper.BrandCrossJpaEntityMapper
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.repository.BrandJpaRepository
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import cokeaswater.cstore.catalog.application.port.out.BrandPersistencePort
 import cokeaswater.cstore.catalog.domain.Brand
 import org.springframework.stereotype.Component
@@ -11,6 +12,11 @@ internal class BrandPersistenceAdapter(
     private val repository: BrandJpaRepository,
     private val mapper: BrandCrossJpaEntityMapper
 ) : BrandPersistencePort {
+    override fun searchBrands(query: BrandSearchQuery): List<Brand> {
+        val entities = repository.searchBrands(query)
+        return mapper.entitiesToBrands(entities)
+    }
+
     override fun findBrandByCode(brandCode: String): Brand? {
         val entity = repository.findByCode(brandCode) ?: return null
         return mapper.entityToBrand(entity)

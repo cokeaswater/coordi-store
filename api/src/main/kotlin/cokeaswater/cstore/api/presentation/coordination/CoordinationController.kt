@@ -4,6 +4,7 @@ import cokeaswater.cstore.api.jsonview.CoordinationView
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationQueryCase
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import com.fasterxml.jackson.annotation.JsonView
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -20,6 +21,7 @@ internal class CoordinationController(
 ) {
 
     @GetMapping("summary")
+    @Operation(description = "모든 브랜드 제품 기준 카테고리 세트 가격 최저가 제품 조회")
     @JsonView(CoordinationView.AllInclude::class)
     fun summaryCoordination(): ResponseEntity<*> {
         val list = queryCase.querySummaryRecommendCoordination()
@@ -30,6 +32,7 @@ internal class CoordinationController(
     }
 
     @GetMapping("brand")
+    @Operation(description = "동일 브랜드 카테고리 세트 가격 기준 최저가 브랜드 조회")
     @JsonView(CoordinationView.CategoryInclude::class)
     fun brandCoordination(): ResponseEntity<*> {
         val list = queryCase.queryBrandRecommendCoordination()
@@ -41,10 +44,11 @@ internal class CoordinationController(
     }
 
     @GetMapping("minMax")
+    @Operation(description = "카테고리 내 최고 / 최저 제품 조회")
     @JsonView(CoordinationView.BrandInclude::class)
     fun categoryCoordination(
-        @RequestParam("category", required = true)
-        @Schema(description = "카테고리 한글명 or ENUM name", examples = ["상의", "아우터", "바지", "스니커즈", "가방", "모자", "양말", "액세서리"])
+        @RequestParam("category")
+        @Schema(description = "카테고리 한글명 or ENUM name", required = true, type = "string", example = "상의", examples = ["상의","아우터", "바지", "스니커즈", "가방", "모자", "양말", "액세서리"])
         category: ProductCategory
     ): ResponseEntity<*> {
 

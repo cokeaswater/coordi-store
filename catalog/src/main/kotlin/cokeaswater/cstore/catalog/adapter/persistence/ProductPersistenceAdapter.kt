@@ -2,6 +2,7 @@ package cokeaswater.cstore.catalog.adapter.persistence
 
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.mapper.ProductCrossJpaEntityMapper
 import cokeaswater.cstore.catalog.adapter.persistence.jpa.repository.ProductJpaRepository
+import cokeaswater.cstore.catalog.application.port.`in`.params.ProductSearchQuery
 import cokeaswater.cstore.catalog.application.port.out.ProductPersistencePort
 import cokeaswater.cstore.catalog.domain.Product
 import org.springframework.data.repository.findByIdOrNull
@@ -14,6 +15,11 @@ internal class ProductPersistenceAdapter(
 ) : ProductPersistencePort {
     override fun findAll(): List<Product> {
         val list = repository.findAll()
+        return mapper.entitiesToProducts(list)
+    }
+
+    override fun searchProducts(query: ProductSearchQuery): List<Product> {
+        val list = repository.searchProducts(query)
         return mapper.entitiesToProducts(list)
     }
 

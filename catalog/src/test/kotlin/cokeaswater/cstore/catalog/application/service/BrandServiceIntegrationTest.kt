@@ -1,5 +1,6 @@
 package cokeaswater.cstore.catalog.application.service
 
+import cokeaswater.cstore.catalog.application.port.`in`.params.BrandSearchQuery
 import cokeaswater.cstore.catalog.fixture.createBrandModifyCommandFixture
 import cokeaswater.cstore.catalog.fixture.createBrandRegisterCommandFixture
 import mu.KotlinLogging
@@ -31,6 +32,19 @@ internal class BrandServiceIntegrationTest(
     }
 
     @Test
+    @DisplayName("브랜드 검색")
+    fun testSearchBrands() {
+
+        val query = BrandSearchQuery(brandCode = "A")
+        val searched = service.searchBrands(query)
+        assertEquals(1, searched.size)
+
+        val query2 = BrandSearchQuery(brandCode = "ZZZ")
+        val searched2 = service.searchBrands(query2)
+        assertEquals(0, searched2.size)
+    }
+
+    @Test
     @DisplayName("브랜드 등록")
     @Transactional
     fun testRegisterBrand() {
@@ -48,7 +62,7 @@ internal class BrandServiceIntegrationTest(
     @Test
     @DisplayName("브랜드 수정")
     @Transactional
-    fun testModifyBrand(){
+    fun testModifyBrand() {
         val cmd = createBrandModifyCommandFixture("A")
 
         val brand = service.modifyBrand(cmd)
@@ -64,7 +78,7 @@ internal class BrandServiceIntegrationTest(
     @Test
     @DisplayName("브랜드 삭제")
     @Transactional
-    fun testRemoveBrand(){
+    fun testRemoveBrand() {
 
         service.removeBrand("A")
 
