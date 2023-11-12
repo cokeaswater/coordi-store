@@ -1,5 +1,6 @@
 package cokeaswater.cstore.api.presentation.common
 
+import cokeaswater.cstore.common.exception.CustomRuntimeException
 import mu.KotlinLogging
 import org.springframework.dao.DataAccessException
 import org.springframework.http.HttpHeaders
@@ -50,6 +51,18 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         val body = createProblemDetail(e, status, "데이터 작업 중 오류가 발생했습니다.", null, null, request)
 
         return handleExceptionInternal(e, body, HttpHeaders.EMPTY, status, request);
+    }
+
+    @ExceptionHandler(CustomRuntimeException::class)
+    fun catchCustomRuntimeException(e: CustomRuntimeException, request: WebRequest): ResponseEntity<Any>? {
+        log.warn { "## Catch CustomRuntimeException : ${e.javaClass.name} , ${e.message}" }
+
+        val status = HttpStatus.INTERNAL_SERVER_ERROR
+
+        val body = createProblemDetail(e, status, e.message ?: "서버 내부 오류가 발생했습니다.", null, null, request)
+
+        return handleExceptionInternal(e, body, HttpHeaders.EMPTY, status, request);
+
     }
 
     @ExceptionHandler(RuntimeException::class)

@@ -6,13 +6,14 @@ import cokeaswater.cstore.api.presentation.coordination.dto.response.CategorySet
 import cokeaswater.cstore.api.presentation.coordination.dto.response.CoordinationLineSetResponse
 import cokeaswater.cstore.catalog.application.port.`in`.dto.CoordinationProductDto
 import cokeaswater.cstore.common.domain.Money
+import cokeaswater.cstore.common.exception.CustomRuntimeException
 import org.springframework.stereotype.Component
 
 @Component
 internal class CoordinationDtoToResponseMapper {
 
     private fun checkValidListSizeForCategorySet(list: List<CoordinationProductDto>) {
-        if (list.size != 8) throw IllegalStateException("제안될 데이터를 생성 중입니다.")
+        if (list.size != 8) throw CustomRuntimeException("제안될 데이터가 아직 준비되지 않았습니다.")
     }
 
     private fun convertCoordinationProductDtoToCoordinationLine(dto: CoordinationProductDto): CoordinationLine {
@@ -57,7 +58,7 @@ internal class CoordinationDtoToResponseMapper {
     }
 
     fun coordinationListToMinMaxCoordination(list: List<CoordinationProductDto>): CoordinationLineSetResponse {
-        if (list.isEmpty()) throw IllegalStateException("제안될 데이터를 생성 중입니다.")
+        if (list.isEmpty()) throw CustomRuntimeException("제안될 데이터가 아직 준비되지 않았습니다.")
 
         val converted = list.map { e -> convertCoordinationProductDtoToCoordinationLine(e) }
 
