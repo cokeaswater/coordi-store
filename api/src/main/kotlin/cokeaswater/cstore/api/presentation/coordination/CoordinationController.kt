@@ -1,7 +1,6 @@
 package cokeaswater.cstore.api.presentation.coordination
 
 import cokeaswater.cstore.api.jsonview.CoordinationView
-import cokeaswater.cstore.api.presentation.common.CustomBody
 import cokeaswater.cstore.catalog.application.port.`in`.usecase.CoordinationQueryCase
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import com.fasterxml.jackson.annotation.JsonView
@@ -27,7 +26,7 @@ internal class CoordinationController(
 
         val body = mapper.coordinationListToSummaryCoordination(list)
 
-        return ResponseEntity(CustomBody(result = body), HttpStatus.OK)
+        return ResponseEntity(body, HttpStatus.OK)
     }
 
     @GetMapping
@@ -38,7 +37,7 @@ internal class CoordinationController(
 
         val body = mapper.coordinationListToBrandCoordination(list)
 
-        return ResponseEntity(CustomBody(result = body), HttpStatus.OK)
+        return ResponseEntity(body, HttpStatus.OK)
 
     }
 
@@ -51,7 +50,7 @@ internal class CoordinationController(
 
         val body = mapper.coordinationListToMinMaxCoordination(list)
 
-        return ResponseEntity(CustomBody(result = body), HttpStatus.OK)
+        return ResponseEntity(body, HttpStatus.OK)
 
     }
 }

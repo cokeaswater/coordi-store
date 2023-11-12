@@ -2,10 +2,16 @@ package cokeaswater.cstore.api.presentation.product.dto.request
 
 import cokeaswater.cstore.catalog.domain.enums.ProductCategory
 import cokeaswater.cstore.common.domain.Money
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 
-data class ProductRegisterRequest(
-    val brandCode: String,
-    val category: ProductCategory,
-    val name: String,
-    val price: Money
+internal data class ProductRegisterRequest(
+    @field:NotEmpty
+    val brandCode: String? = null,
+    @field:NotNull
+    val category: ProductCategory? = null,
+    @field:NotEmpty
+    val name: String? = null,
+    @field:NotNull
+    val price: Money? = null
 )

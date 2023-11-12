@@ -58,6 +58,7 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
         implementation("org.springframework.boot:spring-boot-starter")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
         testImplementation("org.springframework.boot:spring-boot-starter-test")
